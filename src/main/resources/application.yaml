@@ -1,0 +1,18 @@
+spring:
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/hunters_league_db
+#    username: admin
+#    password: admin
+#    driver-class-name: org.postgresql.Driver
+
+  docker:
+    compose:
+      file: src/main/docker/compose.yaml
+      enabled: true
+      lifecycle-management: start_only
+
+  liquibase:
+    change-log: db/changelog/master.yaml
+
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
