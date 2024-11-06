@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AppUserService {
@@ -46,5 +48,9 @@ public class AppUserService {
         }
 
         throw new RuntimeException("Invalid username or password");
+    }
+
+    public Optional<AppUser> getUserById(UUID id) {
+        return appUserRepository.findById(id);
     }
 }
