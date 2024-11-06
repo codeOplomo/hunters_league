@@ -1,8 +1,7 @@
 package org.anas.hunters_league.domain.enums;
 
-import lombok.Getter;
 
-@Getter
+
 public enum Difficulty {
     COMMON(1), RARE(2), EPIC(3), LEGENDARY(5);
 
@@ -12,4 +11,7 @@ public enum Difficulty {
         this.value = value;
     }
 
+    public int getValue() {
+        return value;
+    }
 }

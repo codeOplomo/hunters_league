@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -17,6 +18,11 @@ public class SpeciesService {
 
     public SpeciesService(SpeciesRepository speciesRepository) {
         this.speciesRepository = speciesRepository;
+    }
+
+
+    public Optional<Species> findById(UUID id) {
+        return speciesRepository.findById(id);
     }
 
     public Page<Species> getAllSpecies(Pageable pageable) {

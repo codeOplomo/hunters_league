@@ -11,21 +11,14 @@ import org.mapstruct.MappingTarget;
 public interface SpeciesMapper {
 
     // Mapping from Species entity to SpeciesVM
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "category", source = "category")
-    @Mapping(target = "minimumWeight", source = "minimumWeight")
-    @Mapping(target = "difficulty", source = "difficulty")
-    @Mapping(target = "points", source = "points")
+
     SpeciesVM toSpeciesVM(Species species);
 
 
-    @Mapping(target = "id", ignore = true)
     Species toSpecies(SaveSpeciesVM saveSpeciesVM);
 
 
     // New method to update species from SaveSpeciesVM
-    @Mapping(target = "id", ignore = true)
     void updateSpeciesFromVM(SaveSpeciesVM saveSpeciesVM, @MappingTarget Species species);
 }
 

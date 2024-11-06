@@ -10,7 +10,6 @@ import org.mapstruct.Mapping;
 public interface AuthMapper {
 
     // Mapping methods from VMs to the entity AppUser
-    @Mapping(target = "password", source = "password")
     AppUser toAppUser(RegisterVM registerVM);
 
     AppUser toAppUser(LoginVM loginVM);

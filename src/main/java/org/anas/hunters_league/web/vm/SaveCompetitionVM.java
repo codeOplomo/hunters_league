@@ -1,49 +1,37 @@
-package org.anas.hunters_league.domain;
+package org.anas.hunters_league.web.vm;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.anas.hunters_league.domain.enums.SpeciesType;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
-@Entity
-public class Competition {
-    @Id
-    @GeneratedValue
-    private UUID id;
 
+public class SaveCompetitionVM {
+
+    @NotBlank(message = "Code cannot be empty")
     private String code;
 
+    @NotBlank(message = "Location cannot be empty")
     private String location;
 
+    @Future(message = "Date must be in the future")
     private LocalDateTime date;
 
-    @Enumerated(EnumType.STRING)
+    @NotNull(message = "Species Type is required")
     private SpeciesType speciesType;
 
+    @Min(value = 1, message = "Minimum participants must be at least 1")
     private Integer minParticipants;
 
+    @NotNull(message = "Maximum participants is required")
+    @Min(value = 1, message = "Maximum participants must be at least 1")
     private Integer maxParticipants;
 
+    @NotNull(message = "Open registration status is required")
     private Boolean openRegistration;
-
-    @OneToMany(mappedBy = "competition")
-    private List<Participation> participations;
-
-
-    public Competition() {
-    }
-
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
 
     public String getCode() {
         return code;
@@ -100,14 +88,5 @@ public class Competition {
     public void setOpenRegistration(Boolean openRegistration) {
         this.openRegistration = openRegistration;
     }
-
-    public List<Participation> getParticipations() {
-        return participations;
-    }
-
-    public void setParticipations(List<Participation> participations) {
-        this.participations = participations;
-    }
 }
-
 
