@@ -13,10 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -120,6 +117,17 @@ public class ParticipationService {
         return participationHistory;
     }
 
+    public Map<String, List<ParticipationHistoryDTO>> compareMemberPerformance(UUID userToCompareId, UUID userToCompareWithId) {
+        List<ParticipationHistoryDTO> userToCompareHistory = getUserCompetitionsHistory(userToCompareId);
+        List<ParticipationHistoryDTO> userToCompareWithHistory = getUserCompetitionsHistory(userToCompareWithId);
+
+        // Return the results in a map for structured response
+        Map<String, List<ParticipationHistoryDTO>> comparisonResult = new HashMap<>();
+        comparisonResult.put("User To Compare History", userToCompareHistory);
+        comparisonResult.put("User To Compare With History", userToCompareWithHistory);
+
+        return comparisonResult;
+    }
 
 
 

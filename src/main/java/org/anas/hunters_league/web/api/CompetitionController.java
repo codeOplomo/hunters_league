@@ -8,16 +8,14 @@ import org.anas.hunters_league.service.CompetitionService;
 import org.anas.hunters_league.service.ParticipationService;
 import org.anas.hunters_league.service.dto.ParticipationHistoryDTO;
 import org.anas.hunters_league.service.dto.PodiumResultDTO;
-import org.anas.hunters_league.web.vm.CompetitionDetailsVM;
-import org.anas.hunters_league.web.vm.CompetitionRegisterVM;
-import org.anas.hunters_league.web.vm.CompetitionVM;
-import org.anas.hunters_league.web.vm.SaveCompetitionVM;
+import org.anas.hunters_league.web.vm.*;
 import org.anas.hunters_league.web.vm.mapper.CompetitionMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -95,5 +93,21 @@ public class CompetitionController {
         }
     }
 
+    @PostMapping("/user/compare-results")
+    public ResponseEntity<Map<String, List<ParticipationHistoryDTO>>> compareUserCompetitionHistory(
+            @Valid @RequestBody MembersComparisonVM membersComparisonVM) {
+
+        try {
+            Map<String, List<ParticipationHistoryDTO>> comparisonResult = participationService.compareMemberPerformance(
+                    membersComparisonVM.getUserToCompareId(),
+                    membersComparisonVM.getUserToCompareWithId()
+            );
+            return ResponseEntity.ok(comparisonResult);
+        } catch (RuntimeException e) {
+            // Log the exception for debugging
+            System.err.println("Error comparing competition history: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 }
