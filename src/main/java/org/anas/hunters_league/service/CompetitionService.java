@@ -54,5 +54,9 @@ public class CompetitionService {
         return competitionRepository.findById(id).orElse(null);
     }
 
+    public Competition getCompetitionByCode(String competitionCode) {
+        return competitionRepository.findByCode(competitionCode)
+                .orElseThrow(() -> new RuntimeException("Competition with code " + competitionCode + " not found"));
+    }
 }
 

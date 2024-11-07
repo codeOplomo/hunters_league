@@ -1,18 +1,21 @@
 package org.anas.hunters_league.web.api;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.anas.hunters_league.domain.Competition;
 import org.anas.hunters_league.domain.Participation;
 import org.anas.hunters_league.service.CompetitionService;
-import org.anas.hunters_league.web.vm.CompetitionDetailsVM;
-import org.anas.hunters_league.web.vm.CompetitionRegisterVM;
-import org.anas.hunters_league.web.vm.CompetitionVM;
-import org.anas.hunters_league.web.vm.SaveCompetitionVM;
+import org.anas.hunters_league.service.ParticipationService;
+import org.anas.hunters_league.service.dto.ParticipationHistoryDTO;
+import org.anas.hunters_league.service.dto.PodiumResultDTO;
+import org.anas.hunters_league.web.vm.*;
 import org.anas.hunters_league.web.vm.mapper.CompetitionMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -21,10 +24,12 @@ public class CompetitionController {
 
     private final CompetitionService competitionService;
     private final CompetitionMapper competitionMapper;
+    private final ParticipationService participationService;
 
-    public CompetitionController(CompetitionService competitionService, CompetitionMapper competitionMapper) {
+    public CompetitionController(CompetitionService competitionService, CompetitionMapper competitionMapper, ParticipationService participationService) {
         this.competitionService = competitionService;
         this.competitionMapper = competitionMapper;
+        this.participationService = participationService;
     }
 
     @PostMapping("/add")
@@ -37,7 +42,6 @@ public class CompetitionController {
         CompetitionVM addedCompetitionVM = competitionMapper.toCompetitionVM(addedCompetition);
         return new ResponseEntity<>(addedCompetitionVM, HttpStatus.CREATED);
     }
-
 
 
     @GetMapping("/details/{id}")
@@ -70,4 +74,40 @@ public class CompetitionController {
             return new ResponseEntity<>("Error processing registration: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PostMapping("/podium")
+    public ResponseEntity<List<PodiumResultDTO>> getCompetitionPodium(@RequestBody @NotNull UUID competitionId) {
+        List<PodiumResultDTO> podium = participationService.getCompetitionPodium(competitionId);
+        return ResponseEntity.ok(podium);
+    }
+
+    @PostMapping("/user/results")
+    public ResponseEntity<List<ParticipationHistoryDTO>> getUserCompetitionHistory(@RequestBody @NotNull UUID userId) {
+        try {
+            List<ParticipationHistoryDTO> results = participationService.getUserCompetitionsHistory(userId);
+            return ResponseEntity.ok(results);
+        } catch (RuntimeException e) {
+            // Log the exception for debugging
+            System.err.println("Error fetching competition history: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/user/compare-results")
+    public ResponseEntity<Map<String, List<ParticipationHistoryDTO>>> compareUserCompetitionHistory(
+            @Valid @RequestBody MembersComparisonVM membersComparisonVM) {
+
+        try {
+            Map<String, List<ParticipationHistoryDTO>> comparisonResult = participationService.compareMemberPerformance(
+                    membersComparisonVM.getUserToCompareId(),
+                    membersComparisonVM.getUserToCompareWithId()
+            );
+            return ResponseEntity.ok(comparisonResult);
+        } catch (RuntimeException e) {
+            // Log the exception for debugging
+            System.err.println("Error comparing competition history: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
