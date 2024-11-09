@@ -1,14 +1,15 @@
 package org.anas.hunters_league.service;
 
-import org.anas.hunters_league.domain.Competition;
+import org.anas.hunters_league.domain.AppUser;
 import org.anas.hunters_league.domain.Hunt;
 import org.anas.hunters_league.domain.Participation;
 import org.anas.hunters_league.domain.Species;
+import org.anas.hunters_league.exceptions.DuplicateParticipationException;
+import org.anas.hunters_league.exceptions.UserNotFoundException;
 import org.anas.hunters_league.repository.ParticipationRepository;
 import org.anas.hunters_league.service.dto.ParticipationHistoryDTO;
 import org.anas.hunters_league.service.dto.PodiumResultDTO;
 import org.anas.hunters_league.service.dto.mapper.ParticipationMapper;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,19 +23,33 @@ public class ParticipationService {
     private final ParticipationRepository participationRepository;
     private final SpeciesService speciesService;
     private final ParticipationMapper participationMapper;
-    private final CompetitionService competitionService;
+    private final AppUserService userService;
 
     public ParticipationService(ParticipationRepository participationRepository,
                                 SpeciesService speciesService,
                                 ParticipationMapper participationMapper,
-                                @Lazy CompetitionService competitionService) {
+                                AppUserService userService) {
         this.participationRepository = participationRepository;
         this.speciesService = speciesService;
         this.participationMapper = participationMapper;
-        this.competitionService = competitionService;
+        this.userService = userService;
     }
 
     public Participation save(Participation participation) {
+        UUID userId = participation.getUser().getId();
+        UUID competitionId = participation.getCompetition().getId();
+
+        Optional<AppUser> existingUser = userService.getUserById(userId);
+        if (existingUser.isEmpty()) {
+            throw new UserNotFoundException("User not found.");
+        }
+
+        List<Participation> existingParticipations = participationRepository.findByUserIdAndCompetitionId(userId, competitionId);
+        if (!existingParticipations.isEmpty()) {
+            throw new DuplicateParticipationException("User has already participated in this competition.");
+        }
+
+        // Save the participation
         return participationRepository.save(participation);
     }
 

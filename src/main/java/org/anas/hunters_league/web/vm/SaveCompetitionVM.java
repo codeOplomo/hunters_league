@@ -1,9 +1,6 @@
 package org.anas.hunters_league.web.vm;
 
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import org.anas.hunters_league.domain.enums.SpeciesType;
 
 import java.time.LocalDateTime;
@@ -23,15 +20,21 @@ public class SaveCompetitionVM {
     @NotNull(message = "Species Type is required")
     private SpeciesType speciesType;
 
+    @NotNull(message = "Minimum participants is required")
     @Min(value = 1, message = "Minimum participants must be at least 1")
     private Integer minParticipants;
 
     @NotNull(message = "Maximum participants is required")
-    @Min(value = 1, message = "Maximum participants must be at least 1")
+    @Min(value = 2, message = "Maximum participants must be at least 2")
     private Integer maxParticipants;
 
     @NotNull(message = "Open registration status is required")
     private Boolean openRegistration;
+
+    @AssertTrue(message = "Maximum participants must be greater than minimum participants")
+    public boolean isMaxParticipantsGreaterThanMinParticipants() {
+        return maxParticipants != null && minParticipants != null && maxParticipants > minParticipants;
+    }
 
     public String getCode() {
         return code;

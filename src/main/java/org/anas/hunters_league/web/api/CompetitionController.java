@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.anas.hunters_league.domain.Competition;
 import org.anas.hunters_league.domain.Participation;
+import org.anas.hunters_league.exceptions.*;
 import org.anas.hunters_league.service.CompetitionService;
 import org.anas.hunters_league.service.ParticipationService;
 import org.anas.hunters_league.service.dto.ParticipationHistoryDTO;
@@ -34,14 +35,22 @@ public class CompetitionController {
 
     @PostMapping("/add")
     public ResponseEntity<CompetitionVM> addCompetition(@Valid @RequestBody SaveCompetitionVM saveCompetitionVM) {
-        Competition competition = competitionMapper.toCompetition(saveCompetitionVM);
-        System.out.println("Mapped Competition: " + competition); // Log mapped entity
+        try {
+            Competition competition = competitionMapper.toCompetition(saveCompetitionVM);
+            System.out.println("Mapped Competition: " + competition);
 
-        Competition addedCompetition = competitionService.addCompetition(competition);
+            Competition addedCompetition = competitionService.addCompetition(competition);
 
-        CompetitionVM addedCompetitionVM = competitionMapper.toCompetitionVM(addedCompetition);
-        return new ResponseEntity<>(addedCompetitionVM, HttpStatus.CREATED);
+            CompetitionVM addedCompetitionVM = competitionMapper.toCompetitionVM(addedCompetition);
+            return new ResponseEntity<>(addedCompetitionVM, HttpStatus.CREATED);
+
+        } catch (InvalidParticipantsException e) {
+            // You could choose to return null for CompetitionVM and send an error message as a part of the body
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
     }
+
+
 
 
     @GetMapping("/details/{id}")
@@ -60,20 +69,26 @@ public class CompetitionController {
     @PostMapping("/register")
     public ResponseEntity<String> registerToCompetition(@Valid @RequestBody CompetitionRegisterVM competitionRegisterVM) {
         try {
-            // Call the service method to register the user to the competition
-            Participation participation = competitionService.registerToCompetition(
+            competitionService.registerToCompetition(
                     competitionRegisterVM.getUserId(),
                     competitionRegisterVM.getCompetitionId()
             );
             return new ResponseEntity<>("Registration successful for competition: " + competitionRegisterVM.getCompetitionId(), HttpStatus.OK);
-        } catch (IllegalStateException e) {
-            // If registration fails due to closed registration or max participants
+
+        } catch (LicenseExpiredException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+
+        } catch (RegistrationClosedException | MaxParticipantsReachedException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+
+        } catch (CompetitionNotFoundException | UserNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+
         } catch (RuntimeException e) {
-            // Catch any other runtime exceptions, such as user not found or competition not found
-            return new ResponseEntity<>("Error processing registration: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @PostMapping("/podium")
     public ResponseEntity<List<PodiumResultDTO>> getCompetitionPodium(@RequestBody @NotNull UUID competitionId) {
