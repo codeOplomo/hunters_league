@@ -5,6 +5,7 @@ import org.anas.hunters_league.domain.Competition;
 import org.anas.hunters_league.domain.Participation;
 import org.anas.hunters_league.exceptions.*;
 import org.anas.hunters_league.repository.CompetitionRepository;
+import org.anas.hunters_league.utils.CompetitionCodeGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,6 +69,10 @@ public class CompetitionService {
         if (isCompetitionScheduledForThisWeek(competition.getDate())) {
             throw new InvalidParticipantsException("There can only be one competition scheduled per week.");
         }
+
+        String generatedCode = CompetitionCodeGenerator.generateCode(competition.getLocation(), competition.getDate());
+        competition.setCode(generatedCode);
+        competition.setOpenRegistration(true);
 
         return competitionRepository.save(competition);
     }

@@ -37,7 +37,6 @@ public class CompetitionController {
     public ResponseEntity<CompetitionVM> addCompetition(@Valid @RequestBody SaveCompetitionVM saveCompetitionVM) {
         try {
             Competition competition = competitionMapper.toCompetition(saveCompetitionVM);
-            System.out.println("Mapped Competition: " + competition);
 
             Competition addedCompetition = competitionService.addCompetition(competition);
 
@@ -49,9 +48,6 @@ public class CompetitionController {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
-
-
-
 
     @GetMapping("/details/{id}")
     public ResponseEntity<CompetitionDetailsVM> getCompetitionById(@PathVariable UUID id) {
@@ -88,7 +84,6 @@ public class CompetitionController {
             return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
     @PostMapping("/podium")
     public ResponseEntity<List<PodiumResultDTO>> getCompetitionPodium(@RequestBody @NotNull UUID competitionId) {

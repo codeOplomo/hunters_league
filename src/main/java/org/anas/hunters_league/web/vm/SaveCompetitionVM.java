@@ -8,9 +8,6 @@ import java.time.LocalDateTime;
 
 public class SaveCompetitionVM {
 
-    @NotBlank(message = "Code cannot be empty")
-    private String code;
-
     @NotBlank(message = "Location cannot be empty")
     private String location;
 
@@ -28,21 +25,11 @@ public class SaveCompetitionVM {
     @Min(value = 2, message = "Maximum participants must be at least 2")
     private Integer maxParticipants;
 
-    @NotNull(message = "Open registration status is required")
-    private Boolean openRegistration;
-
     @AssertTrue(message = "Maximum participants must be greater than minimum participants")
     public boolean isMaxParticipantsGreaterThanMinParticipants() {
         return maxParticipants != null && minParticipants != null && maxParticipants > minParticipants;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
 
     public String getLocation() {
         return location;
@@ -84,12 +71,5 @@ public class SaveCompetitionVM {
         this.maxParticipants = maxParticipants;
     }
 
-    public Boolean getOpenRegistration() {
-        return openRegistration;
-    }
-
-    public void setOpenRegistration(Boolean openRegistration) {
-        this.openRegistration = openRegistration;
-    }
 }
 

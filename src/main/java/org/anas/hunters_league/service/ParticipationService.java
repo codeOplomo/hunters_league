@@ -4,8 +4,7 @@ import org.anas.hunters_league.domain.AppUser;
 import org.anas.hunters_league.domain.Hunt;
 import org.anas.hunters_league.domain.Participation;
 import org.anas.hunters_league.domain.Species;
-import org.anas.hunters_league.exceptions.DuplicateParticipationException;
-import org.anas.hunters_league.exceptions.UserNotFoundException;
+import org.anas.hunters_league.exceptions.*;
 import org.anas.hunters_league.repository.ParticipationRepository;
 import org.anas.hunters_league.service.dto.ParticipationHistoryDTO;
 import org.anas.hunters_league.service.dto.PodiumResultDTO;
@@ -24,15 +23,18 @@ public class ParticipationService {
     private final SpeciesService speciesService;
     private final ParticipationMapper participationMapper;
     private final AppUserService userService;
+    private final HuntService huntService;
 
     public ParticipationService(ParticipationRepository participationRepository,
                                 SpeciesService speciesService,
                                 ParticipationMapper participationMapper,
-                                AppUserService userService) {
+                                AppUserService userService,
+                                HuntService huntService) {
         this.participationRepository = participationRepository;
         this.speciesService = speciesService;
         this.participationMapper = participationMapper;
         this.userService = userService;
+        this.huntService = huntService;
     }
 
     public Participation save(Participation participation) {
@@ -55,19 +57,29 @@ public class ParticipationService {
 
     public Double recordResults(UUID participationId, List<Hunt> hunts) {
         Participation participation = participationRepository.findById(participationId)
-                .orElseThrow(() -> new RuntimeException("Participation not found"));
+                .orElseThrow(() -> new ParticipationNotFoundException("Participation not found"));
 
         double totalScore = hunts.stream()
                 .mapToDouble(hunt -> {
                     Species species = speciesService.findById(hunt.getSpecies().getId())
-                            .orElseThrow(() -> new RuntimeException("Species not found"));
+                            .orElseThrow(() -> new SpeciesNotFoundException("Species with ID " + hunt.getSpecies().getId() + " not found"));
+
+                    // Check if the hunt weight is below the minimum weight for the species
+                    if (hunt.getWeight() < species.getMinimumWeight()) {
+                        // If the weight is below the minimum, throw an exception
+                        throw new HuntWeightBelowMinimumException("Hunt weight " + hunt.getWeight() +
+                                " is below the minimum weight " + species.getMinimumWeight() + " for species " + species.getName());
+                    }
 
                     // Retrieve species and difficulty factors
                     double speciesFactor = species.getCategory().getValue();
                     double difficultyFactor = species.getDifficulty().getValue();
 
-                    // Calculate the score for this hunt
-                    return species.getPoints() + (hunt.getWeight() * speciesFactor * difficultyFactor);
+                    double huntScore = species.getPoints() + (hunt.getWeight() * speciesFactor * difficultyFactor);
+
+                    huntService.createHunt(hunt);
+
+                    return huntScore;
                 })
                 .sum();
 
