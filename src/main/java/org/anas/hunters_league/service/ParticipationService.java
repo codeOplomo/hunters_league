@@ -1,14 +1,14 @@
 package org.anas.hunters_league.service;
 
-import org.anas.hunters_league.domain.Competition;
+import org.anas.hunters_league.domain.AppUser;
 import org.anas.hunters_league.domain.Hunt;
 import org.anas.hunters_league.domain.Participation;
 import org.anas.hunters_league.domain.Species;
+import org.anas.hunters_league.exceptions.*;
 import org.anas.hunters_league.repository.ParticipationRepository;
 import org.anas.hunters_league.service.dto.ParticipationHistoryDTO;
 import org.anas.hunters_league.service.dto.PodiumResultDTO;
 import org.anas.hunters_league.service.dto.mapper.ParticipationMapper;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,37 +22,64 @@ public class ParticipationService {
     private final ParticipationRepository participationRepository;
     private final SpeciesService speciesService;
     private final ParticipationMapper participationMapper;
-    private final CompetitionService competitionService;
+    private final AppUserService userService;
+    private final HuntService huntService;
 
     public ParticipationService(ParticipationRepository participationRepository,
                                 SpeciesService speciesService,
                                 ParticipationMapper participationMapper,
-                                @Lazy CompetitionService competitionService) {
+                                AppUserService userService,
+                                HuntService huntService) {
         this.participationRepository = participationRepository;
         this.speciesService = speciesService;
         this.participationMapper = participationMapper;
-        this.competitionService = competitionService;
+        this.userService = userService;
+        this.huntService = huntService;
     }
 
     public Participation save(Participation participation) {
+        UUID userId = participation.getUser().getId();
+        UUID competitionId = participation.getCompetition().getId();
+
+        Optional<AppUser> existingUser = userService.getUserById(userId);
+        if (existingUser.isEmpty()) {
+            throw new UserNotFoundException("User not found.");
+        }
+
+        List<Participation> existingParticipations = participationRepository.findByUserIdAndCompetitionId(userId, competitionId);
+        if (!existingParticipations.isEmpty()) {
+            throw new DuplicateParticipationException("User has already participated in this competition.");
+        }
+
+        // Save the participation
         return participationRepository.save(participation);
     }
 
     public Double recordResults(UUID participationId, List<Hunt> hunts) {
         Participation participation = participationRepository.findById(participationId)
-                .orElseThrow(() -> new RuntimeException("Participation not found"));
+                .orElseThrow(() -> new ParticipationNotFoundException("Participation not found"));
 
         double totalScore = hunts.stream()
                 .mapToDouble(hunt -> {
                     Species species = speciesService.findById(hunt.getSpecies().getId())
-                            .orElseThrow(() -> new RuntimeException("Species not found"));
+                            .orElseThrow(() -> new SpeciesNotFoundException("Species with ID " + hunt.getSpecies().getId() + " not found"));
+
+                    // Check if the hunt weight is below the minimum weight for the species
+                    if (hunt.getWeight() < species.getMinimumWeight()) {
+                        // If the weight is below the minimum, throw an exception
+                        throw new HuntWeightBelowMinimumException("Hunt weight " + hunt.getWeight() +
+                                " is below the minimum weight " + species.getMinimumWeight() + " for species " + species.getName());
+                    }
 
                     // Retrieve species and difficulty factors
                     double speciesFactor = species.getCategory().getValue();
                     double difficultyFactor = species.getDifficulty().getValue();
 
-                    // Calculate the score for this hunt
-                    return species.getPoints() + (hunt.getWeight() * speciesFactor * difficultyFactor);
+                    double huntScore = species.getPoints() + (hunt.getWeight() * speciesFactor * difficultyFactor);
+
+                    huntService.createHunt(hunt);
+
+                    return huntScore;
                 })
                 .sum();
 

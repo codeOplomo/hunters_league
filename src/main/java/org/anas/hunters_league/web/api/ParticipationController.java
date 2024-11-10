@@ -1,5 +1,8 @@
 package org.anas.hunters_league.web.api;
 import jakarta.validation.Valid;
+import org.anas.hunters_league.exceptions.HuntWeightBelowMinimumException;
+import org.anas.hunters_league.exceptions.ParticipationNotFoundException;
+import org.anas.hunters_league.exceptions.SpeciesNotFoundException;
 import org.anas.hunters_league.service.ParticipationService;
 import org.anas.hunters_league.service.dto.ParticipationHistoryDTO;
 import org.anas.hunters_league.web.vm.CompetitionResultsRecordVM;
@@ -21,14 +24,20 @@ public class ParticipationController {
     }
 
     @PostMapping("/recordResults")
-    public ResponseEntity<Double> recordResults(@Valid @RequestBody CompetitionResultsRecordVM competitionResultsRecordVM) {
+    public ResponseEntity<?> recordResults(@Valid @RequestBody CompetitionResultsRecordVM competitionResultsRecordVM) {
         try {
+            // Call the service method to record results
             Double updatedScore = participationService.recordResults(competitionResultsRecordVM.getParticipationId(), competitionResultsRecordVM.getHunts());
             return ResponseEntity.ok(updatedScore);
+        } catch (ParticipationNotFoundException | SpeciesNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (HuntWeightBelowMinimumException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @PostMapping("/competition-results")
     public ResponseEntity<List<ParticipationHistoryDTO.ParticipationDetailsDTO>> getUserCompetitionResults(
