@@ -42,7 +42,6 @@ public class CompetitionService {
         AppUser user = appUserService.getUserById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        // Check if the user's license is expired
         if (user.getLicenseExpirationDate() != null && user.getLicenseExpirationDate().isBefore(LocalDateTime.now())) {
             throw new LicenseExpiredException("User's license has expired. Unable to register for the competition.");
         }
@@ -87,7 +86,7 @@ public class CompetitionService {
 
 
     public Competition getCompetitionById(UUID id) {
-        return competitionRepository.findById(id).orElse(null);
+        return competitionRepository.findById(id).orElseThrow(() -> new CompetitionNotFoundException("Competition with ID " + id + " not found"));
     }
 
     public Competition getCompetitionByCode(String competitionCode) {

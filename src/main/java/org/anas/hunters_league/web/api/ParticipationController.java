@@ -24,18 +24,9 @@ public class ParticipationController {
     }
 
     @PostMapping("/recordResults")
-    public ResponseEntity<?> recordResults(@Valid @RequestBody CompetitionResultsRecordVM competitionResultsRecordVM) {
-        try {
-            // Call the service method to record results
-            Double updatedScore = participationService.recordResults(competitionResultsRecordVM.getParticipationId(), competitionResultsRecordVM.getHunts());
-            return ResponseEntity.ok(updatedScore);
-        } catch (ParticipationNotFoundException | SpeciesNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (HuntWeightBelowMinimumException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<Double> recordResults(@Valid @RequestBody CompetitionResultsRecordVM competitionResultsRecordVM) {
+        Double updatedScore = participationService.recordResults(competitionResultsRecordVM.getParticipationId(), competitionResultsRecordVM.getHunts());
+        return ResponseEntity.ok(updatedScore);
     }
 
 
