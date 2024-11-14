@@ -16,11 +16,9 @@ import java.util.UUID;
 public class SpeciesService {
 
     private final SpeciesRepository speciesRepository;
-    private final HuntService huntService;
 
-    public SpeciesService(SpeciesRepository speciesRepository, HuntService huntService) {
+    public SpeciesService(SpeciesRepository speciesRepository) {
         this.speciesRepository = speciesRepository;
-        this.huntService = huntService;
     }
 
 
@@ -48,9 +46,7 @@ public class SpeciesService {
         if (!speciesRepository.existsById(id)) {
             throw new SpeciesNotFoundException("Species not found with ID: " + id);
         }
-        // Batch delete related hunts
-        huntService.deleteBySpeciesId(id);
-        speciesRepository.deleteById(id);
+        speciesRepository.deleteSpeciesAndRelations(id);
     }
 
 }

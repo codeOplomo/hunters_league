@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1731513238
+      author: OMEN
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createIndex:
+            indexName: idx_user_competition
+            tableName: participation
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: competition_id
+  - changeSet:
+      id: 1731419136-2
+      author: OMEN
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createIndex:
+            indexName: idx_user_id
+            tableName: participation
+            columns:
+              - column:
+                  name: user_id
+  - changeSet:
+      id: 1731419136-3
+      author: OMEN
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createIndex:
+            indexName: idx_competition_id
+            tableName: participation
+            columns:
+              - column:
+                  name: competition_id

@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1731419289
+      author: OMEN
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createProcedure:
+            procedureBody: |
+              CREATE OR REPLACE FUNCTION DeleteSpeciesAndRelations(speciesId UUID)
+              RETURNS VOID AS
+              $$
+              BEGIN
+                LOOP
+                DELETE FROM Hunt WHERE species_id = speciesId;
+                END LOOP;
+                DELETE FROM Species WHERE id = speciesId;
+              END;
+              $$
+              LANGUAGE plpgsql;
