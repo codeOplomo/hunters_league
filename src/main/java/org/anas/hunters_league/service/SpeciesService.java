@@ -3,6 +3,7 @@ package org.anas.hunters_league.service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.anas.hunters_league.domain.Species;
+import org.anas.hunters_league.exceptions.SpeciesNotFoundException;
 import org.anas.hunters_league.repository.SpeciesRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,16 +36,17 @@ public class SpeciesService {
     }
 
     public Species getSpeciesById(UUID id) {
-        return speciesRepository.findById(id).orElse(null); // Return null if not found
+        return speciesRepository.findById(id)
+                .orElseThrow(() -> new SpeciesNotFoundException("Species with ID " + id + " not found"));
     }
+
 
     @Transactional
     public void deleteSpecies(UUID id) {
-        // Check if the species exists, then delete it
         if (!speciesRepository.existsById(id)) {
-            throw new EntityNotFoundException("Species not found with ID: " + id);
+            throw new SpeciesNotFoundException("Species not found with ID: " + id);
         }
-        speciesRepository.deleteById(id);
+        speciesRepository.deleteSpeciesAndRelations(id);
     }
 
 }

@@ -98,8 +98,10 @@ public class ParticipationService {
     }
 
     public List<ParticipationHistoryDTO> getUserCompetitionsHistory(UUID userId) {
-        // Fetch and group participations by competition
         List<Participation> participations = participationRepository.findByUserId(userId);
+        if (participations.isEmpty()) {
+            throw new ParticipationNotFoundException("No participations found for user with ID " + userId);
+        }
         Map<UUID, List<Participation>> userParticipationsByCompetition = participations.stream()
                 .collect(Collectors.groupingBy(p -> p.getCompetition().getId()));
 

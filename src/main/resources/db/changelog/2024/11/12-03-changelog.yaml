@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1731419136
+      author: OMEN
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createProcedure:
+            procedureBody: |
+              CREATE OR REPLACE PROCEDURE DeleteSpeciesAndRelationsV2(speciesId UUID)
+              LANGUAGE plpgsql AS
+              $$
+              BEGIN
+                -- Delete associated records from Hunt
+                DELETE FROM Hunt WHERE species_id = speciesId;
+              
+                -- Delete the species record itself
+                DELETE FROM Species WHERE id = speciesId;
+              END;
+              $$

@@ -2,6 +2,7 @@ package org.anas.hunters_league.web.errors;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import org.anas.hunters_league.exceptions.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,46 @@ public class GlobalExceptionHandler {
                 errors.put(error.getField(), error.getDefaultMessage())
         );
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HuntWeightBelowMinimumException.class)
+    public ResponseEntity<String> handleHuntWeightBelowMinimumException(HuntWeightBelowMinimumException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(LicenseExpiredException.class)
+    public ResponseEntity<String> handleLicenseExpiredException(LicenseExpiredException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(RegistrationClosedException.class)
+    public ResponseEntity<String> handleRegistrationClosedException(RegistrationClosedException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MaxParticipantsReachedException.class)
+    public ResponseEntity<String> handleMaxParticipantsReachedException(MaxParticipantsReachedException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CompetitionNotFoundException.class)
+    public ResponseEntity<String> handleCompetitionNotFoundException(CompetitionNotFoundException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ParticipationNotFoundException.class)
+    public ResponseEntity<String> handleParticipationNotFoundException(ParticipationNotFoundException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(SpeciesNotFoundException.class)
+    public ResponseEntity<String> handleSpeciesNotFoundException(SpeciesNotFoundException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
@@ -47,6 +88,11 @@ public class GlobalExceptionHandler {
                 errors.put(violation.getPropertyPath().toString(), violation.getMessage())
         );
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidParticipantsException.class)
+    public ResponseEntity<String> handleInvalidParticipantsException(InvalidParticipantsException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

@@ -17,6 +17,18 @@ public interface ParticipationRepository extends JpaRepository<Participation, UU
 
     List<Participation> findByCompetitionId(UUID competitionId);
 
+    @Query("SELECT p.competition.id AS competitionId, " +
+            "p.competition.location AS location, " +
+            "p.competition.code AS competitionCode, " +
+            "p.competition.date AS date, " +
+            "p.user.id AS userId, " +
+            "SUM(p.score) AS totalScore " +
+            "FROM Participation p " +
+            "WHERE p.user.id = :userId " +
+            "GROUP BY p.competition.id, p.user.id " +
+            "ORDER BY totalScore DESC")
+    List<Object[]> findUserCompetitionHistory(UUID userId);
+
     @Query("SELECT new org.anas.hunters_league.service.dto.PodiumResultDTO(p.user.id, p.user.username, p.score) " +
             "FROM Participation p WHERE p.competition.id = :competitionId ORDER BY p.score DESC")
     List<PodiumResultDTO> findTop3ByCompetitionIdOrderByScoreDesc(UUID competitionId, Pageable pageable);

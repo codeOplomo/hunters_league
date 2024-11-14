@@ -3,6 +3,7 @@ package org.anas.hunters_league.web.api;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.anas.hunters_league.domain.Species;
+import org.anas.hunters_league.exceptions.SpeciesNotFoundException;
 import org.anas.hunters_league.service.SpeciesService;
 import org.anas.hunters_league.web.vm.SaveSpeciesVM;
 import org.anas.hunters_league.web.vm.SpeciesVM;
@@ -44,7 +45,7 @@ public class SpeciesController {
     @PostMapping("/add")
     public ResponseEntity<SpeciesVM> addSpecies(@Valid @RequestBody SaveSpeciesVM saveSpeciesVM) {
         System.out.println("HELLLOOOO");
-        Species species = speciesMapper.toSpecies(saveSpeciesVM); // Convert to Species here
+        Species species = speciesMapper.toSpecies(saveSpeciesVM);
         Species addedSpecies = speciesService.addSpecies(species);
         SpeciesVM addedSpeciesVM = speciesMapper.toSpeciesVM(addedSpecies);
         return new ResponseEntity<>(addedSpeciesVM, HttpStatus.CREATED);
@@ -58,14 +59,8 @@ public class SpeciesController {
 
         Species existingSpecies = speciesService.getSpeciesById(id);
 
-        if (existingSpecies == null) {
-            return ResponseEntity.notFound().build(); // Return 404 if species not found
-        }
-
-        // Map updated values from SaveSpeciesVM to existing Species
         speciesMapper.updateSpeciesFromVM(saveSpeciesVM, existingSpecies);
-
-        Species updatedSpecies = speciesService.addSpecies(existingSpecies); // Re-save to update
+        Species updatedSpecies = speciesService.addSpecies(existingSpecies);
         SpeciesVM updatedSpeciesVM = speciesMapper.toSpeciesVM(updatedSpecies);
 
         return ResponseEntity.ok(updatedSpeciesVM);
@@ -74,13 +69,8 @@ public class SpeciesController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteSpecies(@PathVariable UUID id) {
-        try {
-            speciesService.deleteSpecies(id);
-            return ResponseEntity.ok("Species with ID " + id + " was successfully deleted.");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Species with ID " + id + " not found.");
-        }
+        speciesService.deleteSpecies(id);
+        return ResponseEntity.ok("Species with ID " + id + " was successfully deleted.");
     }
 
 }
