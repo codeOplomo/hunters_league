@@ -3,15 +3,18 @@ package org.anas.hunters_league.domain;
 
 import jakarta.persistence.*;
 import org.anas.hunters_league.domain.enums.Role;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 
 @Entity
 @Table(name = "\"user\"")
-public class AppUser {
+public class AppUser implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -49,6 +52,16 @@ public class AppUser {
     public AppUser() {
     }
 
+    public AppUser(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
 
     public boolean isEnabled() {
         return enabled;

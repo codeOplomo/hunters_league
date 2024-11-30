@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1732909680
+      author: epshiro
+      changes:
+        - addColumn:
+            tableName: user
+            columns:
+              - column:
+                  name: verification_code
+                  type: VARCHAR(255)
+              - column:
+                  name: verification_expiration
+                  type: DATETIME
+              - column:
+                  name: enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: false
