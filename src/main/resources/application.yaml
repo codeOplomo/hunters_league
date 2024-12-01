@@ -16,14 +16,15 @@ spring:
   # Liquibase configuration
   liquibase:
     change-log: db/changelog/master.yaml
+    enabled: false
 
   # Exclude auto-configuration for security
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+  #autoconfigure:
+   # exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
   # Mail properties
   mail:
-    host: smtp.gmail.com
+    host: sandbox.smtp.mailtrap.io
     port: 587
     username: ${SUPPORT_USERNAME}
     password: ${APP_PASSWORD}
@@ -33,10 +34,14 @@ spring:
           auth: true
           starttls:
             enable: true
+        debug: true
 
   # Optional external configuration file import
   config:
     import: optional:file:.env[.properties]
+  jpa:
+    hibernate:
+      ddl-auto: update
 
 # JWT security configuration
 security:

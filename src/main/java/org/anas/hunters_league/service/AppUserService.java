@@ -41,7 +41,8 @@ public class AppUserService {
     }
 
     public AppUser loginUser(AppUser appUser) {
-        AppUser existingUser = appUserRepository.findByUsername(appUser.getUsername());
+        AppUser existingUser = appUserRepository.findByUsername(appUser.getUsername())
+                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
 
         if (existingUser != null && BCrypt.checkpw(appUser.getPassword(), existingUser.getPassword())) {
             return existingUser;

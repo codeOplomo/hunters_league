@@ -104,5 +104,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleGeneralException(Exception exception) {
         return new ResponseEntity<>("An error occurred: " + exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(VerificationCodeException.class)
+    public ResponseEntity<String> handleVerificationCodeException(VerificationCodeException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }
 

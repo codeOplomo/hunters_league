@@ -11,4 +11,6 @@ databaseChangeLog:
       file: db/changelog/2024/11/12-03-changelog.yaml
   - include:
       file: db/changelog/2024/11/13-01-changelog.yaml
+  - include:
+        file: db/changelog/2024/11/29-01-changelog.yaml
 
