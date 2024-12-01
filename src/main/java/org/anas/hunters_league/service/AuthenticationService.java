@@ -2,6 +2,9 @@ package org.anas.hunters_league.service;
 
 import jakarta.mail.MessagingException;
 import org.anas.hunters_league.domain.AppUser;
+import org.anas.hunters_league.domain.enums.Role;
+import org.anas.hunters_league.exceptions.UserNotFoundException;
+import org.anas.hunters_league.exceptions.VerificationCodeException;
 import org.anas.hunters_league.repository.AppUserRepository;
 import org.anas.hunters_league.web.vm.LoginVM;
 import org.anas.hunters_league.web.vm.RegisterVM;
@@ -35,17 +38,18 @@ public class AuthenticationService {
     }
 
     public AppUser signup(RegisterVM input) {
-        AppUser user = new AppUser(input.getUsername(), input.getEmail(), passwordEncoder.encode(input.getPassword()));
+        AppUser user = new AppUser(input.getUsername(), input.getEmail(), passwordEncoder.encode(input.getPassword()), input.getFirstName(), input.getLastName(), input.getCin(), input.getNationality());
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
         user.setEnabled(false);
+        user.setRole(Role.MEMBER);
         sendVerificationEmail(user);
         return userRepository.save(user);
     }
 
     public AppUser authenticate(LoginVM input) {
         AppUser user = userRepository.findByEmail(input.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!user.isEnabled()) {
             throw new RuntimeException("Account not verified. Please verify your account.");
@@ -65,7 +69,7 @@ public class AuthenticationService {
         if (optionalUser.isPresent()) {
             AppUser user = optionalUser.get();
             if (user.getVerificationCodeExpiresAt().isBefore(LocalDateTime.now())) {
-                throw new RuntimeException("Verification code has expired");
+                throw new VerificationCodeException("Verification code has expired");
             }
             if (user.getVerificationCode().equals(input.getVerificationCode())) {
                 user.setEnabled(true);
@@ -73,10 +77,10 @@ public class AuthenticationService {
                 user.setVerificationCodeExpiresAt(null);
                 userRepository.save(user);
             } else {
-                throw new RuntimeException("Invalid verification code");
+                throw new VerificationCodeException("Invalid verification code");
             }
         } else {
-            throw new RuntimeException("User not found");
+            throw new UserNotFoundException("User not found");
         }
     }
 
@@ -92,7 +96,7 @@ public class AuthenticationService {
             sendVerificationEmail(user);
             userRepository.save(user);
         } else {
-            throw new RuntimeException("User not found");
+            throw new UserNotFoundException("User not found");
         }
     }
 
