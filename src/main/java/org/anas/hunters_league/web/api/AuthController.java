@@ -1,5 +1,6 @@
 package org.anas.hunters_league.web.api;
 
+import jakarta.validation.Valid;
 import org.anas.hunters_league.domain.AppUser;
 import org.anas.hunters_league.service.AuthenticationService;
 import org.anas.hunters_league.service.JwtService;
@@ -40,7 +41,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterVM input) {
+    public ResponseEntity<?> register(@RequestBody @Valid RegisterVM input) {
         try {
             AppUser newUser = authenticationService.signup(input);
             AuthResDTO response = authMapper.userToUserAuthResDTO(newUser);

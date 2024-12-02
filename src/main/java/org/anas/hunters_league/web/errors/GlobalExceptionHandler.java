@@ -26,6 +26,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConstraintViolationExceptions(ConstraintViolationException exception) {
+        Map<String, String> errors = new HashMap<>();
+
+        exception.getConstraintViolations().forEach(violation ->
+                errors.put(violation.getPropertyPath().toString(), violation.getMessage())
+        );
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(HuntWeightBelowMinimumException.class)
     public ResponseEntity<String> handleHuntWeightBelowMinimumException(HuntWeightBelowMinimumException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
@@ -81,15 +92,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>("Data integrity violation: " + exception.getMessage(), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, String>> handleConstraintViolationException(ConstraintViolationException exception) {
-        Map<String, String> errors = new HashMap<>();
-        exception.getConstraintViolations().forEach(violation ->
-                errors.put(violation.getPropertyPath().toString(), violation.getMessage())
-        );
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(InvalidParticipantsException.class)
     public ResponseEntity<String> handleInvalidParticipantsException(InvalidParticipantsException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
@@ -109,5 +111,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleVerificationCodeException(VerificationCodeException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
 }
 
