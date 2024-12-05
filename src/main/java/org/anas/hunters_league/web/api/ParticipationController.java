@@ -1,5 +1,7 @@
 package org.anas.hunters_league.web.api;
 import jakarta.validation.Valid;
+import org.anas.hunters_league.annotations.RequiresPermission;
+import org.anas.hunters_league.domain.enums.Permission;
 import org.anas.hunters_league.exceptions.HuntWeightBelowMinimumException;
 import org.anas.hunters_league.exceptions.ParticipationNotFoundException;
 import org.anas.hunters_league.exceptions.SpeciesNotFoundException;
@@ -11,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -23,11 +27,23 @@ public class ParticipationController {
         this.participationService = participationService;
     }
 
+    @RequiresPermission(Permission.CAN_SCORE)
     @PostMapping("/recordResults")
-    public ResponseEntity<Double> recordResults(@Valid @RequestBody CompetitionResultsRecordVM competitionResultsRecordVM) {
-        Double updatedScore = participationService.recordResults(competitionResultsRecordVM.getParticipationId(), competitionResultsRecordVM.getHunts());
-        return ResponseEntity.ok(updatedScore);
+    public ResponseEntity<Map<String, Object>> recordResults(@Valid @RequestBody CompetitionResultsRecordVM competitionResultsRecordVM) {
+        Double updatedScore = participationService.recordResults(
+                competitionResultsRecordVM.getParticipationId(),
+                competitionResultsRecordVM.getHunts()
+        );
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Results recorded successfully");
+        response.put("participationId", competitionResultsRecordVM.getParticipationId());
+        response.put("totalScore", updatedScore);
+        response.put("numberOfHunts", competitionResultsRecordVM.getHunts().size());
+
+        return ResponseEntity.ok(response);
     }
+
 
 
     @PostMapping("/competition-results")

@@ -6,6 +6,8 @@ import org.anas.hunters_league.domain.Participation;
 import org.anas.hunters_league.exceptions.*;
 import org.anas.hunters_league.repository.CompetitionRepository;
 import org.anas.hunters_league.utils.CompetitionCodeGenerator;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,28 @@ public class CompetitionService {
         this.competitionRepository = competitionRepository;
         this.appUserService = appUserService;
         this.participationService = participationService;
+    }
+
+
+    @Transactional
+    public Competition addCompetition(Competition competition) {
+        if (competition.getMinParticipants() == null || competition.getMaxParticipants() == null) {
+            throw new InvalidParticipantsException("Both minimum and maximum participants must be defined.");
+        }
+
+        if (competition.getMinParticipants() >= competition.getMaxParticipants()) {
+            throw new InvalidParticipantsException("Minimum participants must be less than maximum participants.");
+        }
+
+        if (isCompetitionScheduledForThisWeek(competition.getDate())) {
+            throw new InvalidParticipantsException("There can only be one competition scheduled per week.");
+        }
+
+        String generatedCode = CompetitionCodeGenerator.generateCode(competition.getLocation(), competition.getDate());
+        competition.setCode(generatedCode);
+        competition.setOpenRegistration(true);
+
+        return competitionRepository.save(competition);
     }
 
     public Participation registerToCompetition(UUID userId, UUID competitionId) {
@@ -54,27 +78,6 @@ public class CompetitionService {
         return participationService.save(participation);
     }
 
-
-    @Transactional
-    public Competition addCompetition(Competition competition) {
-        if (competition.getMinParticipants() == null || competition.getMaxParticipants() == null) {
-            throw new InvalidParticipantsException("Both minimum and maximum participants must be defined.");
-        }
-
-        if (competition.getMinParticipants() >= competition.getMaxParticipants()) {
-            throw new InvalidParticipantsException("Minimum participants must be less than maximum participants.");
-        }
-
-        if (isCompetitionScheduledForThisWeek(competition.getDate())) {
-            throw new InvalidParticipantsException("There can only be one competition scheduled per week.");
-        }
-
-        String generatedCode = CompetitionCodeGenerator.generateCode(competition.getLocation(), competition.getDate());
-        competition.setCode(generatedCode);
-        competition.setOpenRegistration(true);
-
-        return competitionRepository.save(competition);
-    }
 
     private boolean isCompetitionScheduledForThisWeek(LocalDateTime competitionDate) {
         LocalDateTime startOfWeek = competitionDate.with(WeekFields.of(Locale.getDefault()).dayOfWeek(), 1).toLocalDate().atStartOfDay();

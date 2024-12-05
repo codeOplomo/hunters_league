@@ -10,6 +10,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ParticipationRepository extends JpaRepository<Participation, UUID> {
+
+    @Query("SELECT new org.anas.hunters_league.service.dto.PodiumResultDTO(p.user.id, p.user.username, p.score) " +
+            "FROM Participation p WHERE p.competition.id = :competitionId ORDER BY p.score DESC")
+    List<PodiumResultDTO> findTop3ByCompetitionIdOrderByScoreDesc(UUID competitionId, Pageable pageable);
+
     // Additional query methods can be added here if needed
     List<Participation> findByUserIdAndCompetitionId(UUID userId, UUID competitionId);
 
@@ -28,9 +33,5 @@ public interface ParticipationRepository extends JpaRepository<Participation, UU
             "GROUP BY p.competition.id, p.user.id " +
             "ORDER BY totalScore DESC")
     List<Object[]> findUserCompetitionHistory(UUID userId);
-
-    @Query("SELECT new org.anas.hunters_league.service.dto.PodiumResultDTO(p.user.id, p.user.username, p.score) " +
-            "FROM Participation p WHERE p.competition.id = :competitionId ORDER BY p.score DESC")
-    List<PodiumResultDTO> findTop3ByCompetitionIdOrderByScoreDesc(UUID competitionId, Pageable pageable);
 
 }

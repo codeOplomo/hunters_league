@@ -1,11 +1,16 @@
 package org.anas.hunters_league.config;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.anas.hunters_league.domain.enums.Permission;
+import org.anas.hunters_league.domain.enums.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -35,7 +40,44 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/competitions/add").hasAuthority(Permission.CAN_MANAGE_COMPETITIONS.name())
+                        .requestMatchers("/api/participations/recordResults").hasAuthority(Permission.CAN_SCORE.name())
+                        .requestMatchers("/api/competitions/details/**").hasAuthority(Permission.CAN_VIEW_COMPETITIONS.name())
+                        .requestMatchers("/api/competitions/register").hasAuthority(Permission.CAN_PARTICIPATE.name())
+                        .requestMatchers("/api/competitions/podium").hasAuthority(Permission.CAN_VIEW_RANKINGS.name())
+                        .requestMatchers("/api/competitions/user/results").hasAuthority(Permission.CAN_VIEW_COMPETITIONS.name())
+                        .requestMatchers("/api/competitions/user/compare-results").hasAuthority(Permission.CAN_VIEW_COMPETITIONS.name())
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            System.out.println("Authentication Entry Point - Authentication Error: " + authException.getMessage());
+                            System.out.println("Current Authentication: " +
+                                    (SecurityContextHolder.getContext().getAuthentication() != null
+                                            ? SecurityContextHolder.getContext().getAuthentication().getName()
+                                            : "No Authentication"));
+
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Unauthorized: " + authException.getMessage());
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            System.out.println("Access Denied - URL: " + request.getRequestURL());
+                            System.out.println("Access Denied - Message: " + accessDeniedException.getMessage());
+
+                            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                            if (authentication != null) {
+                                System.out.println("Current Authentication: " + authentication.getName());
+                                System.out.println("Authorities:");
+                                authentication.getAuthorities().forEach(authority ->
+                                        System.out.println("- " + authority.getAuthority())
+                                );
+                            } else {
+                                System.out.println("No Authentication found in SecurityContext");
+                            }
+
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("Access Denied: " + accessDeniedException.getMessage());
+                        })
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

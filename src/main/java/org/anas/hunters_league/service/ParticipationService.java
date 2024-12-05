@@ -37,6 +37,12 @@ public class ParticipationService {
         this.huntService = huntService;
     }
 
+
+    public List<PodiumResultDTO> getCompetitionPodium(UUID competitionId) {
+        Pageable topThree = PageRequest.of(0, 3);
+        return participationRepository.findTop3ByCompetitionIdOrderByScoreDesc(competitionId, topThree);
+    }
+
     public Participation save(Participation participation) {
         UUID userId = participation.getUser().getId();
         UUID competitionId = participation.getCompetition().getId();
@@ -159,10 +165,5 @@ public class ParticipationService {
     }
 
 
-
-    public List<PodiumResultDTO> getCompetitionPodium(UUID competitionId) {
-        Pageable topThree = PageRequest.of(0, 3);
-        return participationRepository.findTop3ByCompetitionIdOrderByScoreDesc(competitionId, topThree);
-    }
 }
 
