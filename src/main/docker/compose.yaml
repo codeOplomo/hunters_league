@@ -1,6 +1,6 @@
-name: samurai
+version: '3.8'
 services:
-  postgres:
+  samurai_db:
     container_name: samurai_db
     image: 'postgres:latest'
     environment:
@@ -8,9 +8,20 @@ services:
       - 'POSTGRES_PASSWORD=password'
       - 'POSTGRES_USER=samurai'
     volumes:
-      - C:\\Youcode\Documents\pgdata:/var/lib/postgresql/data
+      - C:\\Youcode\\Documents\\pgdata:/var/lib/postgresql/data
     ports:
       - '5433:5432'
-volumes:
-  postgres_data:
-    driver: local
+
+  hunters_league_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hunters_league_app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://samurai_db:5432/samurai
+      SPRING_DATASOURCE_USERNAME: samurai
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - '8443:8443'
+    depends_on:
+      - samurai_db

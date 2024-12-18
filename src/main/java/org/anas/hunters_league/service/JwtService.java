@@ -52,19 +52,20 @@ public class JwtService {
             long expiration
     ) {
         UUID userId = ((AppUser) userDetails).getId();
-        String role = ((AppUser) userDetails).getRole().name();
+        String role = "ROLE_" + ((AppUser) userDetails).getRole().name(); // Ensure "ROLE_" prefix
 
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .claim("id", userId.toString())
-                .claim("role",role)
+                .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);

@@ -5,7 +5,10 @@ import org.anas.hunters_league.domain.enums.Permission;
 import org.anas.hunters_league.domain.enums.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,6 +24,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration {
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -34,19 +38,20 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        String hierarchy = "ROLE_ADMIN > ROLE_JURY \n ROLE_JURY > ROLE_MEMBER";
+        roleHierarchy.setHierarchy(hierarchy);
+        return roleHierarchy;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/competitions/add").hasAuthority(Permission.CAN_MANAGE_COMPETITIONS.name())
-                        .requestMatchers("/api/participations/recordResults").hasAuthority(Permission.CAN_SCORE.name())
-                        .requestMatchers("/api/competitions/details/**").hasAuthority(Permission.CAN_VIEW_COMPETITIONS.name())
-                        .requestMatchers("/api/competitions/register").hasAuthority(Permission.CAN_PARTICIPATE.name())
-                        .requestMatchers("/api/competitions/podium").hasAuthority(Permission.CAN_VIEW_RANKINGS.name())
-                        .requestMatchers("/api/competitions/user/results").hasAuthority(Permission.CAN_VIEW_COMPETITIONS.name())
-                        .requestMatchers("/api/competitions/user/compare-results").hasAuthority(Permission.CAN_VIEW_COMPETITIONS.name())
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

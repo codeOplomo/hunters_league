@@ -1,7 +1,9 @@
 package org.anas.hunters_league.web.api;
 import jakarta.validation.Valid;
 import org.anas.hunters_league.annotations.RequiresPermission;
+import org.anas.hunters_league.annotations.RequiresRole;
 import org.anas.hunters_league.domain.enums.Permission;
+import org.anas.hunters_league.domain.enums.Role;
 import org.anas.hunters_league.exceptions.HuntWeightBelowMinimumException;
 import org.anas.hunters_league.exceptions.ParticipationNotFoundException;
 import org.anas.hunters_league.exceptions.SpeciesNotFoundException;
@@ -27,7 +29,8 @@ public class ParticipationController {
         this.participationService = participationService;
     }
 
-    @RequiresPermission(Permission.CAN_SCORE)
+
+    @RequiresRole(Role.JURY)
     @PostMapping("/recordResults")
     public ResponseEntity<Map<String, Object>> recordResults(@Valid @RequestBody CompetitionResultsRecordVM competitionResultsRecordVM) {
         Double updatedScore = participationService.recordResults(
