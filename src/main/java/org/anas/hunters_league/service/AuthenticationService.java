@@ -3,6 +3,7 @@ package org.anas.hunters_league.service;
 import jakarta.mail.MessagingException;
 import org.anas.hunters_league.domain.AppUser;
 import org.anas.hunters_league.domain.enums.Role;
+import org.anas.hunters_league.exceptions.CredentialsAlreadyExistException;
 import org.anas.hunters_league.exceptions.UserNotFoundException;
 import org.anas.hunters_league.exceptions.VerificationCodeException;
 import org.anas.hunters_league.repository.AppUserRepository;
@@ -38,6 +39,15 @@ public class AuthenticationService {
     }
 
     public AppUser signup(RegisterVM input) {
+        if (userRepository.findByUsername(input.getUsername()).isPresent()) {
+            throw new CredentialsAlreadyExistException("Username already exists");
+        }
+        if (userRepository.findByEmail(input.getEmail()).isPresent()) {
+            throw new CredentialsAlreadyExistException("Email already in use");
+        }
+        if (userRepository.findByCin(input.getCin()).isPresent()) {
+            throw new CredentialsAlreadyExistException("CIN already registered");
+        }
         AppUser user = new AppUser(input.getUsername(), input.getEmail(), passwordEncoder.encode(input.getPassword()), input.getFirstName(), input.getLastName(), input.getCin(), input.getNationality());
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));

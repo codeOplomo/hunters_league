@@ -43,7 +43,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        System.out.println("Request URL: " + request.getRequestURL());
+        System.out.println("Authorization Header: " + authHeader);
+
+        if (authHeader == null || !authHeader.startsWith("Bearer")) {
+            System.out.println("No JWT token found");
             filterChain.doFilter(request, response);
             return;
         }
@@ -51,26 +55,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String jwt = authHeader.substring(7);
             final String userEmail = jwtService.extractUsername(jwt);
+            System.out.println("User Email from JWT: " + userEmail);
 
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            // Always check and set authentication, even if it already exists
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-            if (userEmail != null && authentication == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            System.out.println("User Authorities: ");
+            userDetails.getAuthorities().forEach(authority ->
+                    System.out.println("- " + authority.getAuthority())
+            );
 
-                if (jwtService.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                // Force set the authentication
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                System.out.println("Authentication forcefully set in SecurityContext");
             }
 
             filterChain.doFilter(request, response);
         } catch (Exception exception) {
+            System.out.println("JWT Authentication Error: " + exception.getMessage());
+            exception.printStackTrace();
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
     }

@@ -3,6 +3,8 @@ package org.anas.hunters_league.domain;
 
 import jakarta.persistence.*;
 import org.anas.hunters_league.domain.enums.Role;
+import org.anas.hunters_league.utils.RolePermissions;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -64,7 +67,9 @@ public class AppUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return RolePermissions.getPermissionsForRole(this.role).stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.name()))
+                .collect(Collectors.toList());
     }
 
     public boolean isEnabled() {
@@ -96,9 +101,15 @@ public class AppUser implements UserDetails {
         return id;
     }
 
+//    public String getUsername() {
+//        return username;
+//    }
+
+    @Override
     public String getUsername() {
-        return username;
+        return this.email; // Use email as the username
     }
+
 
     public void setUsername(String username) {
         this.username = username;

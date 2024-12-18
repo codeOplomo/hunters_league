@@ -1,9 +1,12 @@
 package org.anas.hunters_league.web.api;
 
+import jakarta.validation.Valid;
 import org.anas.hunters_league.domain.AppUser;
 import org.anas.hunters_league.service.AuthenticationService;
 import org.anas.hunters_league.service.JwtService;
+import org.anas.hunters_league.service.dto.AppUserTokenDTO;
 import org.anas.hunters_league.service.dto.AuthResDTO;
+import org.anas.hunters_league.service.dto.RegisterDTO;
 import org.anas.hunters_league.web.vm.LoginVM;
 import org.anas.hunters_league.web.vm.RegisterVM;
 import org.anas.hunters_league.web.vm.VerifyUserVM;
@@ -12,18 +15,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
-    private final AuthMapper authMapper;
 
-    public AuthController(AuthenticationService authenticationService, JwtService jwtService, AuthMapper authMapper) {
+    public AuthController(AuthenticationService authenticationService, JwtService jwtService) {
         this.authenticationService = authenticationService;
         this.jwtService = jwtService;
-        this.authMapper = authMapper;
     }
 
     @PostMapping("/login")
@@ -32,23 +36,31 @@ public class AuthController {
             AppUser user = authenticationService.authenticate(input);
             String jwtToken = jwtService.generateToken(user);
 
-            AuthResDTO response = authMapper.userToUserAuthResDTOWithToken(user, jwtToken);
-            return ResponseEntity.ok(response);
+            // Use the AppUserTokenDTO to encapsulate the token
+            AppUserTokenDTO response = new AppUserTokenDTO(jwtToken);
+
+            return ResponseEntity.ok(response); // Return the DTO as the response
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
+
+
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterVM input) {
+    public ResponseEntity<?> register(@RequestBody @Valid RegisterVM input) {
         try {
-            AppUser newUser = authenticationService.signup(input);
-            AuthResDTO response = authMapper.userToUserAuthResDTO(newUser);
+            AppUser user = authenticationService.signup(input);
+            // Create a ResponseDTO object
+            RegisterDTO response = new RegisterDTO("Registration successful!", user.getEmail());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new RegisterDTO(e.getMessage(), null));
         }
     }
+
+
+
 
     @PostMapping("/verify")
     public ResponseEntity<?> verify(@RequestBody VerifyUserVM input) {
@@ -69,7 +81,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-
 }
 
 
