@@ -11,7 +11,8 @@ services:
       - C:\\Youcode\\Documents\\pgdata:/var/lib/postgresql/data
     ports:
       - '5433:5432'
-
+    networks:
+        - samurai_network
   hunters_league_app:
     build:
       context: .
@@ -25,3 +26,6 @@ services:
       - '8443:8443'
     depends_on:
       - samurai_db
+networks:
+  samurai_network:
+    driver: bridge
