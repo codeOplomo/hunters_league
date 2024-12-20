@@ -50,12 +50,6 @@ pipeline {
             }
         }
 
-        stage('Archive Test Results') {
-            steps {
-                junit 'target/surefire-reports/*.xml'
-            }
-        }
-
         stage('Quality Gate Check') {
             when {
                 expression { currentBuild.result == null } // Only run if the previous stage succeeded
