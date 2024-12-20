@@ -28,6 +28,11 @@
     </scm>
     <properties>
         <java.version>17</java.version>
+        <sonar.host.url>http://localhost:9000/</sonar.host.url>
+        <sonar.projectKey>hunters_league</sonar.projectKey>
+        <sonar.projectName>hunters_league</sonar.projectName>
+        <sonar.projectVersion>0.0.1-SNAPSHOT</sonar.projectVersion>
+        <sonar.login>squ_3d95c730768d8d019b8524e885c78011f4f23690</sonar.login>
     </properties>
     <dependencies>
         <dependency>

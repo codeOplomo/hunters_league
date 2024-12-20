@@ -6,8 +6,8 @@
                      }
                  }
                  environment {
-                     SONAR_PROJECT_KEY = "Hunters_League"
-                     SONAR_TOKEN = "sqp_66d931afc375615023cfaf7eca9f11ac691e9be5"
+                     SONAR_PROJECT_KEY = "hunters_league"
+                     SONAR_TOKEN = "squ_3d95c730768d8d019b8524e885c78011f4f23690"
                      SONAR_HOST_URL = "http://host.docker.internal:9000"
                  }
                  stages {
