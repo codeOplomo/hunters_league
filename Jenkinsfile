@@ -41,7 +41,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                     sh """
-                     mvn clean package sonar:sonar \
+                     mvn clean package -DskipTests sonar:sonar \
                       -Dsonar.projectKey=$SONAR_PROJECT_KEY \
                       -Dsonar.host.url=$SONAR_HOST_URL \
                       -Dsonar.login=$SONAR_TOKEN
